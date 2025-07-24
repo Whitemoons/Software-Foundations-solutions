@@ -1696,7 +1696,14 @@ Compute letter_comparison B F.
 Theorem letter_comparison_Eq :
   forall l, letter_comparison l l = Eq.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l.
+  destruct l.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
 (** [] *)
 
 (** We can follow the same strategy to define the comparison operation
@@ -1727,27 +1734,42 @@ Definition modifier_comparison (m1 m2 : modifier) : comparison :=
     of a suitable call to [letter_comparison] to end up with just [3]
     possibilities. *)
 
-Definition grade_comparison (g1 g2 : grade) : comparison
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition grade_comparison (g1 g2 : grade) : comparison :=
+  match g1, g2 with
+  | Grade l1 m1, Grade l2 m2 =>
+    match letter_comparison l1 l2 with
+    | Gt => Gt
+    | Lt => Lt
+    | Eq => modifier_comparison m1 m2
+    end
+  end.
 
 (** The following "unit tests" of your [grade_comparison] function
     should pass once you have defined it correctly. *)
 
 Example test_grade_comparison1 :
   (grade_comparison (Grade A Minus) (Grade B Plus)) = Gt.
-(* FILL IN HERE *) Admitted.
+Proof.
+  simpl. reflexivity.
+Qed.
 
 Example test_grade_comparison2 :
   (grade_comparison (Grade A Minus) (Grade A Plus)) = Lt.
-(* FILL IN HERE *) Admitted.
+Proof.
+  simpl. reflexivity.
+Qed.
 
 Example test_grade_comparison3 :
   (grade_comparison (Grade F Plus) (Grade F Plus)) = Eq.
-(* FILL IN HERE *) Admitted.
+Proof.
+  simpl. reflexivity.
+Qed.
 
 Example test_grade_comparison4 :
   (grade_comparison (Grade B Minus) (Grade C Plus)) = Gt.
-(* FILL IN HERE *) Admitted.
+Proof.
+  simpl. reflexivity.
+Qed.
 
 (** [] *)
 
@@ -1805,8 +1827,18 @@ Theorem lower_letter_lowers:
     letter_comparison F l = Lt ->
     letter_comparison (lower_letter l) l = Lt.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros l H.
+  destruct l.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+  - rewrite -> lower_letter_F_is_F.
+    rewrite -> H.
+    reflexivity.
+Qed.
 
+(* 2025-07-23 23:36 (UTC-7) *)
 (** [] *)
 
 (** **** Exercise: 2 stars, standard (lower_grade)
