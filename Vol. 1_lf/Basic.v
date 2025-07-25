@@ -1858,50 +1858,77 @@ Qed.
     cases.
 
     Our solution is under 10 lines of code total. *)
-Definition lower_grade (g : grade) : grade
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition lower_grade (g : grade) : grade :=
+  match g with
+  | Grade l Plus => Grade l Natural
+  | Grade l Natural => Grade l Minus
+  | Grade l Minus => 
+    match l with
+    | A => Grade B Plus
+    | B => Grade C Plus
+    | C => Grade D Plus
+    | D => Grade F Plus
+    | F => Grade F Minus
+    end
+  end.
 
 Example lower_grade_A_Plus :
   lower_grade (Grade A Plus) = (Grade A Natural).
 Proof.
-(* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 Example lower_grade_A_Natural :
   lower_grade (Grade A Natural) = (Grade A Minus).
 Proof.
-(* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 Example lower_grade_A_Minus :
   lower_grade (Grade A Minus) = (Grade B Plus).
 Proof.
-(* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 Example lower_grade_B_Plus :
   lower_grade (Grade B Plus) = (Grade B Natural).
 Proof.
-(* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 Example lower_grade_F_Natural :
   lower_grade (Grade F Natural) = (Grade F Minus).
 Proof.
-(* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 Example lower_grade_twice :
   lower_grade (lower_grade (Grade B Minus)) = (Grade C Natural).
 Proof.
-(* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 Example lower_grade_thrice :
   lower_grade (lower_grade (lower_grade (Grade B Minus))) = (Grade C Minus).
 Proof.
-(* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 (** Coq makes no distinction between an [Example] and a [Theorem]. We
     state the following as a [Theorem] only as a hint that we will use
     it in proofs below. *)
 Theorem lower_grade_F_Minus : lower_grade (Grade F Minus) = (Grade F Minus).
 Proof.
-(* FILL IN HERE *) Admitted.
+  simpl.
+  reflexivity.
+Qed.
 
 (* GRADE_THEOREM 0.25: lower_grade_A_Plus *)
 (* GRADE_THEOREM 0.25: lower_grade_A_Natural *)
@@ -1932,7 +1959,24 @@ Theorem lower_grade_lowers :
     grade_comparison (Grade F Minus) g = Lt ->
     grade_comparison (lower_grade g) g = Lt.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros g H.
+  destruct g as [l m]. destruct m.
+  - simpl. 
+    rewrite -> letter_comparison_Eq.
+    reflexivity.
+  - simpl. 
+    rewrite -> letter_comparison_Eq.
+    reflexivity.
+  - simpl.
+    destruct l.
+    + reflexivity.
+    + reflexivity.
+    + reflexivity.
+    + reflexivity.
+    + rewrite -> H.
+      reflexivity.
+Qed.
+
 
 (** [] *)
 
@@ -1988,7 +2032,11 @@ Theorem no_penalty_for_mostly_on_time :
     (late_days <? 9 = true) ->
     apply_late_policy late_days g = g.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  rewrite apply_late_policy_unfold.
+  rewrite H.
+  reflexivity.
+Qed.
 
 (** [] *)
 
@@ -2002,7 +2050,12 @@ Theorem grade_lowered_once :
     (late_days <? 17 = true) ->
     (apply_late_policy late_days g) = (lower_grade g).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  rewrite apply_late_policy_unfold.
+  rewrite H.
+  rewrite H0.
+  reflexivity.
+Qed.
 
 (** [] *)
 End LateDays.
@@ -2047,11 +2100,19 @@ Inductive bin : Type :=
     for binary numbers, and a function [bin_to_nat] to convert
     binary numbers to unary numbers. *)
 
-Fixpoint incr (m:bin) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint incr (m:bin) : bin :=
+  match m with
+  | Z => B1 Z
+  | B0 n => B1 n
+  | B1 n => B0 (incr n)
+  end.
 
-Fixpoint bin_to_nat (m:bin) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint bin_to_nat (m:bin) : nat :=
+  match m with
+  | Z => O
+  | B0 n => bin_to_nat n + bin_to_nat n
+  | B1 n => S O + bin_to_nat n + bin_to_nat n
+  end.
 
 (** The following "unit tests" of your increment and binary-to-unary
     functions should pass after you have defined those functions correctly.
@@ -2060,24 +2121,36 @@ Fixpoint bin_to_nat (m:bin) : nat
     next chapter. *)
 
 Example test_bin_incr1 : (incr (B1 Z)) = B0 (B1 Z).
-(* FILL IN HERE *) Admitted.
+Proof.
+  reflexivity.
+Qed.
 
 Example test_bin_incr2 : (incr (B0 (B1 Z))) = B1 (B1 Z).
-(* FILL IN HERE *) Admitted.
+Proof.
+  reflexivity.
+Qed.
 
 Example test_bin_incr3 : (incr (B1 (B1 Z))) = B0 (B0 (B1 Z)).
-(* FILL IN HERE *) Admitted.
+Proof.
+  reflexivity.
+Qed.
 
 Example test_bin_incr4 : bin_to_nat (B0 (B1 Z)) = 2.
-(* FILL IN HERE *) Admitted.
+Proof.
+  reflexivity.
+Qed.
 
 Example test_bin_incr5 :
         bin_to_nat (incr (B1 Z)) = 1 + bin_to_nat (B1 Z).
-(* FILL IN HERE *) Admitted.
+Proof.
+  reflexivity.
+Qed.
 
 Example test_bin_incr6 :
         bin_to_nat (incr (incr (B1 Z))) = 2 + bin_to_nat (B1 Z).
-(* FILL IN HERE *) Admitted.
+Proof.
+  reflexivity.
+Qed.
 
 (** [] *)
 
@@ -2149,4 +2222,4 @@ Example test_bin_incr6 :
     output.  But since they have to be graded by a human, the test
     script won't be able to tell you much about them.  *)
 
-(* 2025-01-13 16:00 *)
+(* 2025-07-24 21:05 (UTC-7) *)
