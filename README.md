@@ -41,4 +41,4 @@ Unless otherwise stated, original content in this repository is provided under t
 
 ---
 
-Happy proving! 🧮
+Happy Coquing! 🧮
