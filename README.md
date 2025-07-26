@@ -27,6 +27,36 @@ All exercises are written in **Coq**, a proof assistant for functional programmi
 
 Each directory corresponds to one volume in the series and contains `.v` files (Coq source files) with my completed solutions.
 
+## 🏃‍♂️ Running the Test Files
+
+1. **Add the module mapping to `_CoqProject`**
+
+   ```text
+   -Q "Vol_1_LF" LF
+   ```
+
+   The repository contains several volumes, so an absolute path is used instead of a relative one.
+
+2. **Compile the chapter files required at chapter what you want to test**
+
+   ```bash
+   coqc -Q "Vol_1_LF" LF Vol_1_LF/Basics.v
+   ```
+
+3. **Compile any additional chapter files required by the test**
+
+   ```bash
+   coqc -Q "Vol_1_LF" LF Vol_1_LF/Induction.v
+   ```
+
+4. **Compile the corresponding test file**
+
+   ```bash
+   coqc -Q "Vol_1_LF" LF Vol_1_LF/InductionTest.v
+   ```
+
+   > Replace `Vol_1_LF` / `Basics` / `Induction` / `InductionTest` with the chapter you are currently working on.
+
 ## ⚙️ Requirements
 
 - [Coq](https://coq.inria.fr/) (Version 8.17+ recommended)
