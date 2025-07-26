@@ -17,10 +17,12 @@ All exercises are written in **Coq**, a proof assistant for functional programmi
 
 ```bash
 .
-├── Vol. 1_LF/    # Volume 1: Logical Foundations
-├── Vol. 2_PLF/   # Volume 2: Programming Language Foundations (not written)
-├── Vol. 3_VFA/   # Volume 3: Verified Functional Algorithms (not written)
-└── README.md     # This file
+├── Vol_1_LF/    # Volume 1: Logical Foundations
+├── Vol_2_PLF/   # Volume 2: Programming Language Foundations (not written)
+├── Vol_3_VFA/   # Volume 3: Verified Functional Algorithms (not written)
+├── _CoqProject  # Set module to use other files
+├── .gitignore   # ignore compiled files
+└── README.md    # This file
 ```
 
 Each directory corresponds to one volume in the series and contains `.v` files (Coq source files) with my completed solutions.
