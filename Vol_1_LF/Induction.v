@@ -657,6 +657,7 @@ Proof.
   - simpl.
     rewrite IH.
     reflexivity.
+Qed.
 
 (** [] *)
 
@@ -788,7 +789,14 @@ Qed.
 Theorem add_shuffle3' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  rewrite -> add_assoc.
+  rewrite -> add_assoc.
+  replace (n + m) with (m + n).
+  reflexivity.
+  rewrite -> add_comm.
+  reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -806,11 +814,19 @@ Inductive bin : Type :=
     from [Basics].  That will make it possible for this file to
     be graded on its own. *)
 
-Fixpoint incr (m:bin) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint incr (m:bin) : bin :=
+  match m with
+  | Z => B1 Z
+  | B0 n => B1 n
+  | B1 n => B0 (incr n)
+  end.
 
-Fixpoint bin_to_nat (m:bin) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint bin_to_nat (m:bin) : nat :=
+  match m with
+  | Z => O
+  | B0 n => bin_to_nat n + bin_to_nat n
+  | B1 n => S O + bin_to_nat n + bin_to_nat n
+  end.
 
 (** In [Basics], we did some unit testing of [bin_to_nat], but we
     didn't prove its correctness. Now we'll do so. *)
@@ -838,16 +854,29 @@ Fixpoint bin_to_nat (m:bin) : nat
 Theorem bin_to_nat_pres_incr : forall b : bin,
   bin_to_nat (incr b) = 1 + bin_to_nat b.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+  intros b.
+  induction b as [| b' IH | b'' IH' ].
+  - simpl.
+    reflexivity.
+  - simpl.
+    reflexivity.
+  - simpl.
+    rewrite -> IH'.
+    simpl.
+    rewrite <- plus_n_Sm.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard (nat_bin_nat) *)
 
 (** Write a function to convert natural numbers to binary numbers. *)
 
-Fixpoint nat_to_bin (n:nat) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint nat_to_bin (n:nat) : bin :=
+  match n with
+  | O => Z
+  | S n' => incr (nat_to_bin n')
+  end.
 
 (** Prove that, if we start with any [nat], convert it to [bin], and
     convert it back, we get the same [nat] which we started with.
@@ -861,7 +890,14 @@ Fixpoint nat_to_bin (n:nat) : bin
 
 Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n' IH].
+  - reflexivity.
+  - simpl.
+    rewrite -> bin_to_nat_pres_incr.
+    rewrite -> IH.
+    reflexivity.
+Qed.
 
 (** [] *)
 
@@ -886,24 +922,37 @@ Abort.
 
 Lemma double_incr : forall n : nat, double (S n) = S (S (double n)).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  simpl.
+  reflexivity.
+Qed.
 
 (** Now define a similar doubling function for [bin]. *)
 
-Definition double_bin (b:bin) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition double_bin (b:bin) : bin :=
+  match b with
+  | Z => Z
+  | b' => B0 b'
+  end.
 
 (** Check that your function correctly doubles zero. *)
 
 Example double_bin_zero : double_bin Z = Z.
-(* FILL IN HERE *) Admitted.
+Proof.
+  reflexivity.
+Qed.
 
 (** Prove this lemma, which corresponds to [double_incr]. *)
 
 Lemma double_incr_bin : forall b,
     double_bin (incr b) = incr (incr (double_bin b)).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b.
+  destruct b.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
 
 (** [] *)
 
@@ -924,7 +973,8 @@ Abort.
     [double_bin] that might have failed to satisfy [double_bin_zero]
     yet otherwise seem correct. *)
 
-(* FILL IN HERE *)
+(* Z can be replaced to B0 Z. It means we can make a various of equivalent [bin].
+    In my definition, b have to be minimum expression. So bin can't get itself to nat_to_bin (bin_to_nat b). *)
 
 (** To solve that problem, we can introduce a _normalization_ function
     that selects the simplest [bin] out of all the equivalent
@@ -941,14 +991,21 @@ Abort.
     end of the [bin] and process each bit only once. Do not try to
     "look ahead" at future bits. *)
 
-Fixpoint normalize (b:bin) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint normalize (b:bin) : bin :=
+  match b with 
+  | Z => Z
+  | B1 b' => B1 (normalize b')
+  | B0 b' => double_bin (normalize b')
+  end.
 
-(** It would be wise to do some [Example] proofs to check that your definition of
-    [normalize] works the way you intend before you proceed. They won't be graded,
-    but fill them in below. *)
+  (** It would be wise to do some [Example] proofs to check that your definition of
+  [normalize] works the way you intend before you proceed. They won't be graded,
+  but fill them in below. *)
 
-(* FILL IN HERE *)
+Example test_normalize1: normalize (B1 (B0 (B0 Z))) = B1 Z.
+Proof.
+  reflexivity.
+Qed.
 
 (** Finally, prove the main theorem. The inductive cases could be a
     bit tricky.
@@ -959,10 +1016,45 @@ Fixpoint normalize (b:bin) : bin
     progress. We have one lemma for the [B0] case (which also makes
     use of [double_incr_bin]) and another for the [B1] case. *)
 
+Lemma double_nat_to_bin: forall n, nat_to_bin (n + n) = double_bin (nat_to_bin n).
+Proof.
+  intros n.
+  induction n as [| n' IH].
+  - reflexivity.
+  - simpl.
+    rewrite -> double_incr_bin.
+    rewrite -> add_comm.
+    simpl.
+    rewrite -> IH.
+    reflexivity.
+Qed.
+
+Lemma incr_double_bin: forall b, incr (double_bin b) = B1 b.
+Proof.
+  intros b.
+  destruct b.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
 Theorem bin_nat_bin : forall b, nat_to_bin (bin_to_nat b) = normalize b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b.
+  induction b as [| b' IH | b'' IH'].
+  - reflexivity.
+  - simpl.
+    rewrite -> double_nat_to_bin.
+    rewrite -> IH.
+    reflexivity.
+  - simpl.
+    rewrite -> double_nat_to_bin.
+    rewrite -> IH'.
+    rewrite -> incr_double_bin.
+    reflexivity.
+Qed.
 
+(* 2025-08-01 01:10 (UTC-4) *)
 (** [] *)
 
 (* 2025-01-13 16:00 *)
