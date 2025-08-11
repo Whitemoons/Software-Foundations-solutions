@@ -818,10 +818,28 @@ Proof. reflexivity. Qed.
     Show that [map] and [rev] commute.  You may need to define an
     auxiliary lemma. *)
 
+Lemma map_app : forall (X Y : Type) (f : X -> Y) (l1 l2 : list X),
+  map f (l1 ++ l2) = map f l1 ++ map f l2.
+Proof.
+  intros X Y f l1 l2.
+  induction l1 as [| n l1' IH].
+  - reflexivity.
+  - simpl.
+    rewrite -> IH.
+    reflexivity.
+Qed.
+
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X Y f l.
+  induction l as [| n l' IH].
+  - reflexivity.
+  - simpl.
+    rewrite -> map_app.
+    rewrite -> IH.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, especially useful (flat_map)
@@ -837,13 +855,18 @@ Proof.
 *)
 
 Fixpoint flat_map {X Y: Type} (f: X -> list Y) (l: list X)
-                   : list Y
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+                   : list Y :=
+  match l with
+  | [] => []
+  | n :: l' => f n ++ flat_map f l'
+  end.
 
 Example test_flat_map1:
   flat_map (fun n => [n;n;n]) [1;5;4]
   = [1; 1; 1; 5; 5; 5; 4; 4; 4].
- (* FILL IN HERE *) Admitted.
+Proof.
+  reflexivity.
+Qed.
 (** [] *)
 
 (** Lists are not the only inductive type for which [map] makes sense.
@@ -866,6 +889,19 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
     probably easiest to do it on a _copy_ of this file that you can
     throw away afterwards.)
 *)
+Fixpoint filter' (X:Type) (test: X->bool) (l:list X) : list X :=
+  match l with
+  | [] => []
+  | h :: t =>
+    if test h then h :: (filter' X test t)
+    else filter' X test t
+  end.
+
+Fixpoint map' (X Y : Type) (f : X->Y) (l : list X) : list Y :=
+  match l with
+  | []     => []
+  | h :: t => (f h) :: (map' X Y f t)
+  end.
 (** [] *)
 
 (* ================================================================= *)
@@ -921,6 +957,10 @@ Proof. reflexivity. Qed.
     different? *)
 
 (* FILL IN HERE
+
+Example fold_example4 :
+  fold (fun (x : bool) (y : nat) => if x then y+1 else y) [true; false; true; false; true] 0 = 3.
+Proof. reflexivity. Qed.
 
     [] *)
 
@@ -996,7 +1036,13 @@ Proof. reflexivity. Qed.
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros X l.
+  induction l as [| n l' IH].
+  - reflexivity.
+  - simpl.
+    rewrite <- IH.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard (fold_map)
@@ -1004,13 +1050,24 @@ Proof.
     We can also define [map] in terms of [fold].  Finish [fold_map]
     below. *)
 
-Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y :=
+  fold (fun (x: X) (yl : list Y) => f x :: yl) l [].
 
 (** Write down a theorem [fold_map_correct] stating that [fold_map] is
     correct, and prove it in Coq.  (Hint: again, remember that
     [reflexivity] simplifies expressions a bit more aggressively than
     [simpl].) *)
+
+Example test_fold_map1: fold_map (fun x => plus 3 x) [2;2;0] = [5;5;3].
+Proof. 
+  reflexivity. 
+Qed.
+
+Example test_fold_map2:
+  fold_map odd [2;1;2;5] = [false;true;false;true].
+Proof. 
+  reflexivity. 
+Qed.
 
 (* FILL IN HERE *)
 
@@ -1050,8 +1107,10 @@ Definition prod_curry {X Y Z : Type}
     the theorems below to show that the two are inverses. *)
 
 Definition prod_uncurry {X Y Z : Type}
-  (f : X -> Y -> Z) (p : X * Y) : Z
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+  (f : X -> Y -> Z) (p : X * Y) : Z := 
+  match p with
+  | (x, y) => f x y
+  end.
 
 (** As a (trivial) example of the usefulness of currying, we can use it
     to shorten one of the examples that we saw above: *)
@@ -1070,13 +1129,19 @@ Theorem uncurry_curry : forall (X Y Z : Type)
                         x y,
   prod_curry (prod_uncurry f) x y = f x y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  reflexivity.
+Qed.
 
 Theorem curry_uncurry : forall (X Y Z : Type)
                         (f : (X * Y) -> Z) (p : X * Y),
   prod_uncurry (prod_curry f) p = f p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  destruct p as (x, y).
+  reflexivity.
+Qed.
+(* 2025-08-11 23:31 (UTC+3) *)
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (nth_error_informal)
