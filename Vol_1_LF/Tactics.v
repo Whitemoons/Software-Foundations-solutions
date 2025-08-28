@@ -77,7 +77,11 @@ Theorem silly_ex : forall p,
   even p = true ->
   odd (S p) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros p eq1 eq2 eq3.
+  apply eq2.
+  apply eq1.
+  apply eq3.
+Qed.
 (** [] *)
 
 (** To use the [apply] tactic, the (conclusion of the) fact
@@ -108,11 +112,17 @@ Proof.
     that theorem as part of your (relatively short) solution to this
     exercise. You do not need [induction]. *)
 
+Search rev.
+
 Theorem rev_exercise1 : forall (l l' : list nat),
   l = rev l' ->
   l' = rev l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l l' eq.
+  rewrite -> eq.
+  symmetry.
+  apply rev_involutive.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard, optional (apply_rewrite)
@@ -122,6 +132,9 @@ Proof.
     applied? *)
 
 (* FILL IN HERE
+
+    [rewrite] works with conditional hypotheses.
+    [rewrite] automatically reaches a goal.
 
     [] *)
 
@@ -195,7 +208,11 @@ Example trans_eq_exercise : forall (n m o p : nat),
      (n + p) = m ->
      (n + p) = (minustwo o).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o p eq1 eq2.
+  transitivity m.
+  apply eq2.
+  apply eq1.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -282,7 +299,14 @@ Example injection_ex3 : forall (X : Type) (x y z : X) (l j : list X),
   j = z :: l ->
   x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j H1 H2.
+  injection H1 as H1' H1''.
+  rewrite H2 in H1''.
+  injection H1'' as H1'''.
+  rewrite -> H1'.
+  symmetry.
+  apply H1'''.
+Qed.
 (** [] *)
 
 (** So much for injectivity of constructors.  What about disjointness? *)
@@ -332,7 +356,9 @@ Example discriminate_ex3 :
     x :: y :: l = [] ->
     x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j H1.
+  discriminate H1.
+Qed.
 (** [] *)
 
 (** For a more useful example, we can use [discriminate] to make a
@@ -646,7 +672,21 @@ Proof.
 Theorem eqb_true : forall n m,
   n =? m = true -> n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n' IH].
+  - intros m.
+    destruct m as [| m'].
+    + reflexivity.
+    + intros H.
+      discriminate H.
+  - intros m eq.
+    destruct m as [| m'].
+    + discriminate eq.
+    + simpl in eq.
+      f_equal.
+      apply IH.
+      apply eq.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (eqb_true_informal)
@@ -665,11 +705,32 @@ Definition manual_grade_for_informal_proof : option (nat*string) := None.
 
     In addition to being careful about how you use [intros], practice
     using "in" variants in this proof.  (Hint: use [plus_n_Sm].) *)
+
+Check plus_n_Sm.
+
 Theorem plus_n_n_injective : forall n m,
   n + n = m + m ->
   n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n as [| n' IH].
+  - intros m eq.
+    simpl in eq.
+    destruct m as [| m'].
+    + reflexivity.
+    + discriminate eq.
+  - intros m eq.
+    destruct m as [| m'].
+    + discriminate eq.
+    + f_equal.
+      simpl in eq.
+      rewrite <- plus_n_Sm in eq.
+      rewrite <- plus_n_Sm in eq.
+      injection eq as eq1.
+      apply IH in eq1.
+      apply eq1.
+Qed.
+(* 2025-08-29 00:31 (UTC+2) *) 
 (** [] *)
 
 (** The strategy of doing fewer [intros] before an [induction] to
